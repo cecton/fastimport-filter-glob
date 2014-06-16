@@ -7,15 +7,18 @@ from fastimport.processors import filter_processor
 
 
 class GlobFilterProcessor(filter_processor.FilterProcessor):
+    def _paths_to_regex(self, paths):
+        return "|".join(map(fnmatch.translate, paths.split(",")))
+
     def pre_process(self):
         if isinstance(self.params.get('include_paths'), basestring):
             self.includes = re.compile(
-                fnmatch.translate(self.params['include_paths']))
+                self._paths_to_regex(self.params['include_paths']))
         else:
             self.includes = self.params.get('include_paths')
         if isinstance(self.params.get('exclude_paths'), basestring):
             self.excludes = re.compile(
-                fnmatch.translate(self.params['exclude_paths']))
+                self._paths_to_regex(self.params['exclude_paths']))
         else:
             self.excludes = self.params.get('exclude_paths')
         self.squash_empty_commits = bool(
